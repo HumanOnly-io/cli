@@ -1,6 +1,6 @@
 # HumanOnly CLI (`ho`)
 
-The official command-line tool for [HumanOnly](https://humanonly.io) professionals. Browse the marketplace, bid on requests, track time, push deliverables, and manage your workflow — all from the terminal.
+The official command-line tool for [HumanOnly](https://humanonly.io) professionals. Browse the marketplace, manage engagements, track time, push deliverables, and manage your workflow — all from the terminal.
 
 ## Installation
 
@@ -16,6 +16,9 @@ Requires Node.js 18 or later.
 # Authenticate
 ho login
 
+# See your requests and engagements
+ho list
+
 # Browse the marketplace
 ho marketplace
 ho marketplace --search "kubernetes" --space devops
@@ -23,8 +26,11 @@ ho marketplace --search "kubernetes" --space devops
 # View a request
 ho view cmmv68dnm000079uebhtl4px8
 
-# Check out a request (sets active context + offers to bid)
+# Check out a request or engagement (sets active context)
 ho checkout cmmv68dnm000079uebhtl4px8
+
+# Check current context
+ho status
 
 # Start tracking time
 ho timer start "debugging ingress controller"
@@ -38,6 +44,9 @@ ho log 2h30m "API integration work"
 # Push a deliverable (zips current directory)
 ho push
 ho push ./report.pdf --final
+
+# Check upcoming meetings
+ho meetings
 
 # Check your stats
 ho stats
@@ -53,6 +62,15 @@ ho stats
 | `ho login --token <key>` | Authenticate with an API token |
 | `ho logout` | Log out and clear credentials |
 | `ho whoami` | Show current logged-in user |
+
+### Your Work
+
+| Command | Description |
+|---------|-------------|
+| `ho list` | List all your requests and engagements in one table |
+| `ho requests` | List your requests |
+| `ho engagements` | List your active engagements |
+| `ho engagements --status ACTIVE` | Filter engagements by status |
 
 ### Marketplace
 
@@ -70,7 +88,7 @@ ho stats
 
 | Command | Description |
 |---------|-------------|
-| `ho checkout <id>` | Set active context (request or engagement) |
+| `ho checkout <id>` | Set active context (accepts request ID or engagement ID) |
 | `ho use <id>` | Alias for `checkout` |
 | `ho status` | Show current context + timer status |
 

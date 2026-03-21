@@ -32,7 +32,7 @@ export async function statusCommand() {
       console.log();
     } else if (ctx.type === "engagement") {
       // No direct GET /engagements/:id — find via requests
-      const allRequests = await api("/requests?limit=50");
+      const allRequests = await api("/requests?mine=true&limit=50");
       const list = Array.isArray(allRequests) ? allRequests : allRequests?.data || [];
       const match = list.find((r) => r.engagement?.id === ctx.id);
 

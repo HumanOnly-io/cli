@@ -2,11 +2,11 @@ import { api } from "../lib/api.js";
 import { formatTable, truncate, formatMoney, timeAgo, formatId, chalk } from "../lib/format.js";
 import ora from "ora";
 
-export async function requestsCommand(options) {
+export async function requestsCommand() {
   const spinner = ora("Loading your requests...").start();
 
   try {
-    const data = await api("/requests?limit=50");
+    const data = await api("/requests?mine=true&limit=50");
     const requests = Array.isArray(data) ? data : data?.data || [];
 
     spinner.stop();
@@ -27,10 +27,10 @@ export async function requestsCommand(options) {
         chalk.dim(formatId(r.id)),
         truncate(r.title, 40),
         budget,
-        r.status === "OPEN" ? chalk.green(r.status) :
-          r.status === "IN_PROGRESS" ? chalk.blue(r.status) :
-          r.status === "COMPLETED" ? chalk.dim(r.status) :
-          chalk.yellow(r.status),
+        r.status === "OPEN" ? chalk.green(r.status)
+          : r.status === "IN_PROGRESS" ? chalk.blue(r.status)
+          : r.status === "COMPLETED" ? chalk.dim(r.status)
+          : chalk.yellow(r.status),
         String(r.bids?.length ?? r._count?.bids ?? "—"),
         timeAgo(r.createdAt),
       ];

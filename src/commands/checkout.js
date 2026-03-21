@@ -17,7 +17,7 @@ export async function checkoutCommand(id) {
     // Not a request — might be an engagement ID
     // Search user's requests to find one with this engagement ID
     try {
-      const myRequests = await api("/requests?status=IN_PROGRESS&limit=50");
+      const myRequests = await api("/requests?mine=true&limit=50");
       const list = Array.isArray(myRequests) ? myRequests : myRequests?.data || [];
       const match = list.find((r) => r.engagement?.id === id);
       if (match) {

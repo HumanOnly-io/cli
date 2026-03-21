@@ -6,20 +6,22 @@ export async function engagementsCommand(options) {
   const spinner = ora("Loading engagements...").start();
 
   try {
-    const params = new URLSearchParams();
-    if (options.status) params.set("status", options.status.toUpperCase());
-
-    // Fetch user's requests that have engagements
-    const data = await api(`/requests?${params.toString()}&limit=50`);
+    const data = await api("/requests?mine=true&limit=50");
     const requests = Array.isArray(data) ? data : data?.data || [];
 
-    // Filter to ones with engagements
-    const withEngagements = requests.filter((r) => r.engagement);
+    // Filter to requests that have engagements
+    let withEngagements = requests.filter((r) => r.engagement);
+
+    if (options.status) {
+      withEngagements = withEngagements.filter(
+        (r) => r.engagement.status === options.status.toUpperCase(),
+      );
+    }
 
     spinner.stop();
 
     if (withEngagements.length === 0) {
-      console.log(chalk.dim("No active engagements found."));
+      console.log(chalk.dim("No engagements found."));
       return;
     }
 
@@ -35,11 +37,11 @@ export async function engagementsCommand(options) {
         chalk.dim(formatId(eng.id)),
         truncate(r.title, 40),
         pricing,
-        eng.status === "ACTIVE" ? chalk.green(eng.status) :
-          eng.status === "COMPLETED" ? chalk.blue(eng.status) :
-          eng.status === "DISPUTED" ? chalk.red(eng.status) :
-          chalk.dim(eng.status),
-        timeAgo(eng.createdAt),
+        eng.status === "ACTIVE" ? chalk.green(eng.status)
+          : eng.status === "COMPLETED" ? chalk.blue(eng.status)
+          : eng.status === "DISPUTED" ? chalk.red(eng.status)
+          : chalk.dim(eng.status),
+        timeAgo(eng.createdAt || r.createdAt),
       ];
     });
 
