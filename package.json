@@ -1,0 +1,30 @@
+{
+  "name": "@humanonly/cli",
+  "version": "0.1.0",
+  "description": "HumanOnly CLI — manage your pro workflow from the terminal",
+  "type": "module",
+  "bin": {
+    "ho": "./bin/ho.js",
+    "humanonly": "./bin/ho.js"
+  },
+  "main": "src/index.js",
+  "engines": { "node": ">=18" },
+  "files": ["bin/", "src/"],
+  "keywords": ["humanonly", "freelance", "marketplace", "cli", "developer-tools"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HumanOnly-io/cli"
+  },
+  "dependencies": {
+    "archiver": "^7.0.0",
+    "chalk": "^5.4.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^13.0.0",
+    "form-data": "^4.0.0",
+    "ignore": "^6.0.0",
+    "inquirer": "^12.0.0",
+    "open": "^10.0.0",
+    "ora": "^8.0.0"
+  }
+}
