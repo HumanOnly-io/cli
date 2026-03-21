@@ -40,8 +40,10 @@ export async function loginCommand(options) {
             spinner.fail("Failed to process authentication response.");
           }
 
-          server.close();
-          resolve();
+          server.close(() => {
+            resolve();
+            process.exit(0);
+          });
         });
         return;
       }
@@ -75,13 +77,16 @@ export async function loginCommand(options) {
       }
 
       // Timeout after 5 minutes
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         if (server.listening) {
           spinner.fail("Authentication timed out.");
-          server.close();
-          resolve();
+          server.close(() => {
+            resolve();
+            process.exit(1);
+          });
         }
       }, 5 * 60 * 1000);
+      timeout.unref();
     });
   });
 }
