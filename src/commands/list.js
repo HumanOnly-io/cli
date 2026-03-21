@@ -2,22 +2,54 @@ import { api } from "../lib/api.js";
 import { formatTable, truncate, formatMoney, timeAgo, formatId, chalk } from "../lib/format.js";
 import ora from "ora";
 
+async function fetchAllWork() {
+  // Fetch as client (requests I created)
+  const myRequestsRaw = await api("/requests?mine=true&limit=50").catch(() => []);
+  const myRequests = Array.isArray(myRequestsRaw) ? myRequestsRaw : myRequestsRaw?.data || [];
+
+  // Fetch as pro (bids I submitted, which link to requests)
+  const myBidsRaw = await api("/bids/mine?limit=50").catch(() => []);
+  const myBids = Array.isArray(myBidsRaw) ? myBidsRaw : myBidsRaw?.data || [];
+
+  // Combine: requests I own + requests I bid on
+  const seen = new Set();
+  const items = [];
+
+  for (const r of myRequests) {
+    seen.add(r.id);
+    items.push({ request: r, engagement: r.engagement || null, role: "client" });
+  }
+
+  for (const bid of myBids) {
+    const r = bid.request;
+    if (r && !seen.has(r.id)) {
+      seen.add(r.id);
+      // Fetch full request to get engagement data
+      try {
+        const full = await api(`/requests/${r.id}`);
+        items.push({ request: full, engagement: full.engagement || null, role: "pro" });
+      } catch {
+        items.push({ request: r, engagement: null, role: "pro" });
+      }
+    }
+  }
+
+  return items;
+}
+
 export async function listCommand() {
   const spinner = ora("Loading...").start();
 
   try {
-    const data = await api("/requests?mine=true&limit=50");
-    const requests = Array.isArray(data) ? data : data?.data || [];
-
+    const items = await fetchAllWork();
     spinner.stop();
 
-    if (requests.length === 0) {
+    if (items.length === 0) {
       console.log(chalk.dim("No requests or engagements found."));
       return;
     }
 
-    const rows = requests.map((r) => {
-      const eng = r.engagement;
+    const rows = items.map(({ request: r, engagement: eng, role }) => {
       const budget = r.budgetType === "HOURLY"
         ? `${formatMoney(r.budgetHourlyRateCents)}/hr`
         : r.budgetType === "FIXED"
@@ -27,7 +59,8 @@ export async function listCommand() {
       return [
         chalk.dim(formatId(r.id)),
         eng ? chalk.dim(formatId(eng.id)) : chalk.dim("—"),
-        truncate(r.title, 35),
+        truncate(r.title, 30),
+        role === "client" ? chalk.cyan("Client") : chalk.green("Pro"),
         budget,
         r.status === "OPEN" ? chalk.green(r.status)
           : r.status === "IN_PROGRESS" ? chalk.blue(r.status)
@@ -45,13 +78,15 @@ export async function listCommand() {
 
     console.log();
     console.log(formatTable(
-      ["Request ID", "Engagement ID", "Title", "Budget", "Req Status", "Eng Status", "Created"],
+      ["Request ID", "Engagement ID", "Title", "Role", "Budget", "Req Status", "Eng Status", "Created"],
       rows,
     ));
     console.log();
-    console.log(chalk.dim(`${requests.length} item(s). Use ${chalk.cyan("ho checkout <id>")} to set active context.`));
+    console.log(chalk.dim(`${items.length} item(s). Use ${chalk.cyan("ho checkout <id>")} to set active context.`));
     console.log();
   } catch (err) {
     spinner.fail(err.message);
   }
 }
+
+export { fetchAllWork };

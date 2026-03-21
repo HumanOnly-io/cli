@@ -1,4 +1,4 @@
-import { api } from "../lib/api.js";
+import { fetchAllWork } from "./list.js";
 import { formatTable, truncate, formatMoney, timeAgo, formatId, chalk } from "../lib/format.js";
 import ora from "ora";
 
@@ -6,17 +6,15 @@ export async function requestsCommand() {
   const spinner = ora("Loading your requests...").start();
 
   try {
-    const data = await api("/requests?mine=true&limit=50");
-    const requests = Array.isArray(data) ? data : data?.data || [];
-
+    const items = await fetchAllWork();
     spinner.stop();
 
-    if (requests.length === 0) {
+    if (items.length === 0) {
       console.log(chalk.dim("No requests found."));
       return;
     }
 
-    const rows = requests.map((r) => {
+    const rows = items.map(({ request: r, role }) => {
       const budget = r.budgetType === "HOURLY"
         ? `${formatMoney(r.budgetHourlyRateCents)}/hr`
         : r.budgetType === "FIXED"
@@ -26,6 +24,7 @@ export async function requestsCommand() {
       return [
         chalk.dim(formatId(r.id)),
         truncate(r.title, 40),
+        role === "client" ? chalk.cyan("Client") : chalk.green("Pro"),
         budget,
         r.status === "OPEN" ? chalk.green(r.status)
           : r.status === "IN_PROGRESS" ? chalk.blue(r.status)
@@ -37,9 +36,9 @@ export async function requestsCommand() {
     });
 
     console.log();
-    console.log(formatTable(["ID", "Title", "Budget", "Status", "Bids", "Created"], rows));
+    console.log(formatTable(["ID", "Title", "Role", "Budget", "Status", "Bids", "Created"], rows));
     console.log();
-    console.log(chalk.dim(`${requests.length} request(s). Use ${chalk.cyan("ho view <id>")} for details.`));
+    console.log(chalk.dim(`${items.length} request(s). Use ${chalk.cyan("ho view <id>")} for details.`));
     console.log();
   } catch (err) {
     spinner.fail(err.message);

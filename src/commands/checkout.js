@@ -15,13 +15,13 @@ export async function checkoutCommand(id) {
     request = await api(`/requests/${id}`);
   } catch {
     // Not a request — might be an engagement ID
-    // Search user's requests to find one with this engagement ID
+    // Search all user's work (client + pro) for matching engagement
     try {
-      const myRequests = await api("/requests?mine=true&limit=50");
-      const list = Array.isArray(myRequests) ? myRequests : myRequests?.data || [];
-      const match = list.find((r) => r.engagement?.id === id);
-      if (match) {
-        request = match;
+      const { fetchAllWork } = await import("./list.js");
+      const items = await fetchAllWork();
+      const matchItem = items.find((i) => i.engagement?.id === id);
+      if (matchItem) {
+        request = matchItem.request;
       } else {
         spinner.fail("Resource not found.");
         return;

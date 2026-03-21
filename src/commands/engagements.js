@@ -1,4 +1,4 @@
-import { api } from "../lib/api.js";
+import { fetchAllWork } from "./list.js";
 import { formatTable, truncate, formatMoney, timeAgo, formatId, chalk } from "../lib/format.js";
 import ora from "ora";
 
@@ -6,15 +6,12 @@ export async function engagementsCommand(options) {
   const spinner = ora("Loading engagements...").start();
 
   try {
-    const data = await api("/requests?mine=true&limit=50");
-    const requests = Array.isArray(data) ? data : data?.data || [];
-
-    // Filter to requests that have engagements
-    let withEngagements = requests.filter((r) => r.engagement);
+    const items = await fetchAllWork();
+    let withEngagements = items.filter((i) => i.engagement);
 
     if (options.status) {
       withEngagements = withEngagements.filter(
-        (r) => r.engagement.status === options.status.toUpperCase(),
+        (i) => i.engagement.status === options.status.toUpperCase(),
       );
     }
 
@@ -25,8 +22,7 @@ export async function engagementsCommand(options) {
       return;
     }
 
-    const rows = withEngagements.map((r) => {
-      const eng = r.engagement;
+    const rows = withEngagements.map(({ request: r, engagement: eng, role }) => {
       const pricing = eng.pricingType === "HOURLY"
         ? `${formatMoney(eng.hourlyRateCents)}/hr`
         : eng.pricingType === "FIXED"
@@ -35,7 +31,8 @@ export async function engagementsCommand(options) {
 
       return [
         chalk.dim(formatId(eng.id)),
-        truncate(r.title, 40),
+        truncate(r.title, 35),
+        role === "client" ? chalk.cyan("Client") : chalk.green("Pro"),
         pricing,
         eng.status === "ACTIVE" ? chalk.green(eng.status)
           : eng.status === "COMPLETED" ? chalk.blue(eng.status)
@@ -46,7 +43,7 @@ export async function engagementsCommand(options) {
     });
 
     console.log();
-    console.log(formatTable(["Engagement ID", "Request", "Pricing", "Status", "Started"], rows));
+    console.log(formatTable(["Engagement ID", "Request", "Role", "Pricing", "Status", "Started"], rows));
     console.log();
     console.log(chalk.dim(`${withEngagements.length} engagement(s). Use ${chalk.cyan("ho checkout <id>")} to set active context.`));
     console.log();

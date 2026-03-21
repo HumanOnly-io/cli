@@ -31,10 +31,11 @@ export async function statusCommand() {
       label("Bids:", String(request.bidCount ?? request._count?.bids ?? 0));
       console.log();
     } else if (ctx.type === "engagement") {
-      // No direct GET /engagements/:id — find via requests
-      const allRequests = await api("/requests?mine=true&limit=50");
-      const list = Array.isArray(allRequests) ? allRequests : allRequests?.data || [];
-      const match = list.find((r) => r.engagement?.id === ctx.id);
+      // Find engagement via combined work items (client + pro)
+      const { fetchAllWork } = await import("./list.js");
+      const items = await fetchAllWork();
+      const matchItem = items.find((i) => i.engagement?.id === ctx.id);
+      const match = matchItem?.request;
 
       spinner.stop();
 
