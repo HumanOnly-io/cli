@@ -12,6 +12,9 @@ import { pushCommand } from "./commands/push.js";
 import { meetingsCommand } from "./commands/meetings.js";
 import { statsCommand } from "./commands/stats.js";
 import { configShowCommand, configSetCommand } from "./commands/config-cmd.js";
+import { engagementsCommand } from "./commands/engagements.js";
+import { requestsCommand } from "./commands/requests.js";
+import { listCommand } from "./commands/list.js";
 
 const program = new Command();
 
@@ -63,6 +66,22 @@ program
   .command("use <id>")
   .description("Set active context (alias for checkout)")
   .action(checkoutCommand);
+
+program
+  .command("list")
+  .description("List your engagements and requests")
+  .action(listCommand);
+
+program
+  .command("engagements")
+  .description("List your active engagements")
+  .option("--status <status>", "Filter by status (ACTIVE, COMPLETED, CANCELLED, DISPUTED)")
+  .action(engagementsCommand);
+
+program
+  .command("requests")
+  .description("List your requests")
+  .action(requestsCommand);
 
 program
   .command("status")

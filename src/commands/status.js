@@ -31,27 +31,45 @@ export async function statusCommand() {
       label("Bids:", String(request.bidCount ?? request._count?.bids ?? 0));
       console.log();
     } else if (ctx.type === "engagement") {
-      const engagement = await api(`/engagements/${ctx.id}`);
+      // No direct GET /engagements/:id — find via requests
+      const allRequests = await api("/requests?limit=50");
+      const list = Array.isArray(allRequests) ? allRequests : allRequests?.data || [];
+      const match = list.find((r) => r.engagement?.id === ctx.id);
+
       spinner.stop();
 
+      if (!match) {
+        console.log(chalk.yellow("Engagement context no longer accessible. Run ") + chalk.cyan("`ho checkout <id>`") + chalk.yellow(" to set a new one."));
+        return;
+      }
+
+      const engagement = match.engagement;
+
       console.log();
-      console.log(chalk.bold(engagement.title || engagement.request?.title || "Engagement"));
+      console.log(chalk.bold(match.title || "Engagement"));
       console.log(chalk.dim(`Engagement · ${ctx.id}`));
       console.log();
 
       const label = (l, v) => console.log(`  ${chalk.dim(l.padEnd(14))} ${v}`);
 
       label("Status:", engagement.status || "N/A");
-      if (engagement.totalMinutes || engagement._count?.timeEntries) {
-        label("Time logged:", formatDuration(engagement.totalMinutes || 0));
-        label("Time entries:", String(engagement._count?.timeEntries ?? 0));
+      label("Pricing:", engagement.pricingType === "HOURLY"
+        ? `${formatMoney(engagement.hourlyRateCents)}/hr`
+        : engagement.pricingType === "FIXED"
+          ? `${formatMoney(engagement.fixedPriceCents)} fixed`
+          : "Open");
+
+      // Fetch time entries if hourly
+      if (engagement.pricingType === "HOURLY") {
+        try {
+          const entries = await api(`/engagements/${ctx.id}/time-entries`);
+          const entryList = Array.isArray(entries) ? entries : entries?.data || [];
+          const totalMinutes = entryList.reduce((sum, e) => sum + (e.minutes || 0), 0);
+          label("Time logged:", formatDuration(totalMinutes));
+          label("Time entries:", String(entryList.length));
+        } catch { /* no access to time entries */ }
       }
-      if (engagement._count?.deliverables !== undefined) {
-        label("Deliverables:", String(engagement._count.deliverables));
-      }
-      if (engagement.totalEarned) {
-        label("Earned:", formatMoney(engagement.totalEarned));
-      }
+
       console.log();
     }
 
