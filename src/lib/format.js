@@ -43,7 +43,7 @@ export function timeAgo(dateStr) {
 }
 
 export function formatId(id) {
-  return id ? id.slice(0, 12) + "…" : "";
+  return id || "";
 }
 
 export { chalk };

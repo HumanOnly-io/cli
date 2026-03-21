@@ -15,6 +15,7 @@ import { configShowCommand, configSetCommand } from "./commands/config-cmd.js";
 import { engagementsCommand } from "./commands/engagements.js";
 import { requestsCommand } from "./commands/requests.js";
 import { listCommand } from "./commands/list.js";
+import { completionCommand } from "./commands/completion.js";
 
 const program = new Command();
 
@@ -143,5 +144,12 @@ configCmd
   .command("set <key> <value>")
   .description("Set a config value")
   .action(configSetCommand);
+
+program
+  .command("completion")
+  .description("Output shell completion script")
+  .option("--bash", "Output bash completion script")
+  .option("--zsh", "Output zsh completion script")
+  .action(completionCommand);
 
 program.parse();
