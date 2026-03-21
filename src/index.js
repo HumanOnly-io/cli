@@ -147,9 +147,10 @@ configCmd
 
 program
   .command("completion")
-  .description("Output shell completion script")
+  .description("Shell completions setup")
   .option("--bash", "Output bash completion script")
   .option("--zsh", "Output zsh completion script")
+  .option("--install", "Auto-install completions for your shell")
   .action(completionCommand);
 
 program.parse();
