@@ -136,6 +136,40 @@ Respects `.gitignore` (or `.hoignore`). Always excludes `node_modules`, `.git`, 
 | `ho config` | Show current configuration |
 | `ho config set apiUrl <url>` | Override API URL |
 
+## Shell Completions
+
+Tab completions are available for Bash and Zsh. They provide auto-complete for all commands, subcommands, and flags.
+
+### Bash
+
+Add to your `~/.bashrc`:
+
+```bash
+source <(ho completions bash)
+```
+
+Or copy the completion file directly:
+
+```bash
+cp $(npm root -g)/@humanonly/cli/completions/ho.bash ~/.local/share/bash-completion/completions/ho
+```
+
+### Zsh
+
+Add to your `~/.zshrc`:
+
+```bash
+source <(ho completions zsh)
+```
+
+Or copy to your completions directory:
+
+```bash
+cp $(npm root -g)/@humanonly/cli/completions/ho.zsh ~/.zsh/completions/_ho
+```
+
+Then reload your shell or run `exec $SHELL`.
+
 ## Configuration
 
 Config is stored at `~/.config/humanonly/config.json`. Timer state is stored at `~/.config/humanonly/timer.json`.
