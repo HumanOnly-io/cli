@@ -10,13 +10,22 @@ export async function checkoutCommand(id) {
   let request = null;
   let engagement = null;
 
-  // Try as request first
+  // Try as request ID first
   try {
     request = await api(`/requests/${id}`);
   } catch {
-    // Not a request — try as engagement
+    // Not a request — might be an engagement ID
+    // Search user's requests to find one with this engagement ID
     try {
-      engagement = await api(`/engagements/${id}`);
+      const myRequests = await api("/requests?status=IN_PROGRESS&limit=50");
+      const list = Array.isArray(myRequests) ? myRequests : myRequests?.data || [];
+      const match = list.find((r) => r.engagement?.id === id);
+      if (match) {
+        request = match;
+      } else {
+        spinner.fail("Resource not found.");
+        return;
+      }
     } catch {
       spinner.fail("Resource not found.");
       return;
