@@ -23,6 +23,7 @@ export async function loginCommand(options) {
 
   // Browser-based login
   return new Promise((resolve) => {
+    let spinner = ora("Starting...").start();
     const server = http.createServer((req, res) => {
       if (req.method === "POST" && req.url === "/callback") {
         let body = "";
@@ -62,7 +63,7 @@ export async function loginCommand(options) {
 
     server.listen(0, async () => {
       const port = server.address().port;
-      const spinner = ora("Opening browser...").start();
+      spinner.text = "Opening browser...";
 
       try {
         await open(`https://humanonly.io/cli-auth?port=${port}`);
