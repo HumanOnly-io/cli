@@ -1,6 +1,7 @@
-import { readFileSync } from "fs";
+import { readFileSync, mkdirSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { homedir } from "os";
 import { chalk } from "../lib/format.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -21,9 +22,6 @@ export function completionCommand(options) {
   if (options.install) {
     // Auto-install for the detected shell
     const shell = process.env.SHELL || "";
-    const { mkdirSync, writeFileSync } = await import("fs");
-    const { join } = await import("path");
-    const { homedir } = await import("os");
 
     if (shell.includes("zsh")) {
       const dir = join(homedir(), ".zsh", "completions");
