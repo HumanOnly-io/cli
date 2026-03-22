@@ -6,7 +6,7 @@ export async function api(path, options = {}) {
   const token = config.token;
 
   const { body, ...rest } = options;
-  const headers = { ...options.headers };
+  const headers = { "X-Requested-With": "XMLHttpRequest", ...options.headers };
 
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
